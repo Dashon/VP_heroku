@@ -73,10 +73,13 @@ class UserController extends Controller
      */
     public function paymentSources(Request $request, User $user)
     {
-        $user = $request->user();
+        $current_user = auth()->user();
+        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $user->id != $current_user->id) {
+           //return response("bogus");
+        }
 
         $payment_sources = array();
-
+//dd($user->paymentMethods());
         if( $user->hasPaymentMethod() ){
             foreach( $user->paymentMethods() as $method ){
                 array_push( $payment_sources, [
