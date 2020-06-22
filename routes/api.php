@@ -23,4 +23,5 @@ Route::post('/login', 'Api\AuthController@login');
 
 Route::apiResource('/user', 'Api\UserController')->middleware('auth:api');
 Route::apiResource('/donation', 'Api\DonationController')->middleware('auth:api');
+
 Route::get('/user/{id}/paymentSources', 'Api\UserController@paymentSources')->middleware('auth:api');
