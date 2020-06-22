@@ -15,6 +15,12 @@ class DonationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *     path="/donations",
+     *     @OA\Response(response="200", description="Display a listing of donations.")
+     * )
+     */
     public function index()
     {
         $donations = Donation::all();
