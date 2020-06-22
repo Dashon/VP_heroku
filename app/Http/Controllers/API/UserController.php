@@ -73,7 +73,23 @@ class UserController extends Controller
      */
     public function paymentSources(Request $request, User $user)
     {
-        return response(['paymentSources' => ReponseResource::collection($user->paymentSources()), 'message' => 'Retrieved successfully'], 200);
+        $user = $request->user();
+
+        $payment_sources = array();
+
+        if( $user->hasPaymentMethod() ){
+            foreach( $user->paymentMethods() as $method ){
+                array_push( $payment_sources, [
+                    'id' => $method->id,
+                    'brand' => $method->card->brand,
+                    'last_four' => $method->card->last4,
+                    'exp_month' => $method->card->exp_month,
+                    'exp_year' => $method->card->exp_year,
+                ] );
+            }
+        }
+
+        return response(['paymentSources' => $payment_sources, 'message' => 'Retrieved successfully'], 200);
     }
 
 
