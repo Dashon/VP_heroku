@@ -20,9 +20,8 @@ class CreateDonationsTable extends Migration
             $table->string('amount');
             $table->enum('status', array('active','paused','inactive'))->default(('active'));
             $table->enum('type', array('round_up', 'once', 'monthly'));
-            $table->year('start_date');
-            $table->string('stripe_tx');
-            $table->string('plaid_tx');
+            $table->date('start_date');
+            $table->string('stripe_token');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

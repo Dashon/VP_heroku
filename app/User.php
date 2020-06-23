@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Laravel\Cashier\Billable;
+use App\BankAccount;
 
 class User extends Authenticatable
 {
@@ -66,5 +67,9 @@ class User extends Authenticatable
     public function donations()
     {
         return $this->hasMany(Donation::class);
+    }
+    public function bankAccounts()
+    {
+        return $this->hasMany(BankAccount::class);
     }
 }

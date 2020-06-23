@@ -23,6 +23,11 @@ class DonationController extends Controller
      */
     public function index()
     {
+        $current_user = auth()->user();
+        if ($current_user->type === 'donator') {
+            response("Not Authorized", 401);
+        }
+
         $donations = Donation::all();
         return response(['donations' => ReponseResource::collection($donations), 'message' => 'Retrieved successfully'], 200);
     }
@@ -41,15 +46,13 @@ class DonationController extends Controller
         if (!$current_user->hasPaymentMethod()) {
             return response(['message' => 'No payment methods found'], 405);
         }
-        $request->status = "active";
+        $data['status'] = "active";
         $validator = Validator::make($data, [
             'description' => ['nullable', 'string', 'max:512'],
-            'stripeToken' => 'required|max:255',
+            'stripe_token' => 'required|max:255',
             'amount' => 'required|numeric|min:100',
-            'start_date' => 'required|date_format:m/d/Y|after_or_equal:' . $todayDate,
+            'start_date' => 'required|date|after_or_equal:' . $todayDate,
             'type' => "required|in:round_up,once,monthly",
-            'stripe_tx' => 'required|max:255',
-            'plaid_tx' => 'required|max:255',
         ]);
 
 
@@ -57,10 +60,53 @@ class DonationController extends Controller
             return response(['error' => $validator->errors(), 'Validation Error']);
         }
 
-        $token = $request->stripeToken;
-        $stripeCharge = $current_user->charge($request->amount * 100, ['source' => $token]);
 
-        $donation = Donation::create($data);
+        $billing_cycle_anchor = \Carbon\Carbon::createFromDate($request->start_date);
+        $donation = new Donation($data);
+        $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+
+        if ($request->type == 'once') {
+            // $current_user->charge($request->amount * 100, ['source' => $request->stripe_token,
+            // 'customer'=>$current_user->stripe_id, ]);
+            $stripe->charges->create([
+                'amount' => 2000,
+                'currency' => 'usd',
+                'object'=>'card',
+                'source' => $request->stripe_token,
+                'description' => 'My First Test Charge (created for API docs)',
+              ]);
+
+        } else if ($request->type == 'monthly') {
+
+            $cent_ammount = round($request->amount / 100) * 100;
+            $dollar_amount = $cent_ammount / 100;
+            $planId = "price_$dollar_amount" . "_month";
+            try {
+                $price = $stripe->plans->retrieve($planId);
+            } catch (\Throwable $th) {
+                $price = $stripe->plans->create([
+                    'id' => $planId,
+                    'amount' => $cent_ammount,
+                    'currency' => 'usd',
+                    'interval' => 'month',
+                    'product' => 'prod_HW7YzUejCHBuLp',
+                ]);
+            }
+
+            $stripe->subscriptions->create([
+                'customer' => $current_user->stripe_id,
+                'items' => [
+                  ['price' => $price->id],
+                ],
+                'default_source'=>$request->stripe_token,
+                'billing_cycle_anchor' => $billing_cycle_anchor->timestamp,
+                'cancel_at_period_end' => false,
+                'prorate' => false,
+              ]);
+        }
+
+
+        $current_user->donations()->save($donation);
 
         return response(['donation' => new ReponseResource($donation), 'message' => 'Created successfully'], 200);
     }
@@ -73,6 +119,11 @@ class DonationController extends Controller
      */
     public function show(Donation $donation)
     {
+        $current_user = auth()->user();
+        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $donation->user->id != $current_user->id) {
+            response("Not Authorized", 401);
+        }
+
         return response(['donation' => new ReponseResource($donation), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -86,11 +137,13 @@ class DonationController extends Controller
     public function update(Request $request, Donation $donation)
     {
         $this->validate($request, [
-            'status' => ['string', 'in:' , ['canceled', 'paused', 'active']]
+            'status' => ['string', 'in:', ['canceled', 'paused', 'active']]
         ]);
-        // if($validator->fails()){
-        //     return response(['error' => $validator->errors(), 'Validation Error']);
-        // }
+
+        $current_user = auth()->user();
+        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $donation->user->id != $current_user->id) {
+            response("Not Authorized", 401);
+        }
 
         if ($request->status == 'canceled' && !in_array($this->status, ['active', 'paused'])) {
             return response(['message' => 'donation cannot be canceled'], 405);
@@ -117,8 +170,12 @@ class DonationController extends Controller
      */
     public function destroy(Donation $donation)
     {
-        $donation->delete();
+        $current_user = auth()->user();
+        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $donation->user->id != $current_user->id) {
+            response("Not Authorized", 401);
+        }
 
+        $donation->delete();
         return response(['message' => 'Deleted']);
     }
 }

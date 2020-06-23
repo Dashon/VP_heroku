@@ -29,6 +29,10 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $current_user = auth()->user();
+        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $user->id != $current_user->id) {
+            response("Not Authorized", 401);
+        }
         return response(['user' => new ReponseResource($user), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -36,35 +40,40 @@ class UserController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\User  $user
+     * @param  \App\User $user
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, User $user)
     {
         $current_user = auth()->user();
+        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $user->id != $current_user->id) {
+            response("Not Authorized", 401);
+        }
         $this->validate($request, [
-            'type' => ['string', 'in:' , ['admin', 'moderator', 'donator']],
+            'type' => ['string', 'in:', ['admin', 'moderator', 'donator']],
             'phone' => 'phone:AUTO,US',
             'email' => 'email|required|unique:users'
         ]);
 
         if (request()->has('active') || request()->has('type')) {
             if ($current_user->type != 'admin' || $current_user->type != 'moderator') {
-                return response(['message' => 'only an admin can edit accounts'], 405);
+                return response(['message' => 'only an admin activate/deactivate edit accounts'], 405);
             }
             if ($this->type == 'admin' &&  $current_user->type != 'admin') {
-                return response(['message' => 'only an admin can edit an admin account'], 405);
+                return response(['message' => 'only an admin can activate/deactivate an admin account'], 405);
             }
         }
-        $user->update(['status' => $request->status,
-                        'type' => $request->type || $current_user->type,
-                        'phone' => $request->phone || $current_user->phone,
-                        'email' => $request->email || $current_user->email]);
+        $user->update([
+            'status' => $request->status,
+            'type' => $request->type || $current_user->type,
+            'phone' => $request->phone || $current_user->phone,
+            'email' => $request->email || $current_user->email
+        ]);
 
         return response(['user' => new ReponseResource($user), 'message' => 'Retrieved successfully'], 200);
     }
 
-        /**
+    /**
      * View all user Payment sources
      *
      * @param  \Illuminate\Http\Request  $request
@@ -75,20 +84,24 @@ class UserController extends Controller
     {
         $current_user = auth()->user();
         if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $user->id != $current_user->id) {
-           //return response("bogus");
+            response("Not Authorized", 401);
         }
-
         $payment_sources = array();
-//dd($user->paymentMethods());
-        if( $user->hasPaymentMethod() ){
-            foreach( $user->paymentMethods() as $method ){
-                array_push( $payment_sources, [
-                    'id' => $method->id,
-                    'brand' => $method->card->brand,
-                    'last_four' => $method->card->last4,
-                    'exp_month' => $method->card->exp_month,
-                    'exp_year' => $method->card->exp_year,
-                ] );
+        if ($user->hasPaymentMethod()) {
+            foreach ($user->paymentMethods() as $card) {
+                array_push($payment_sources, [
+                    'id' => $card->id,
+                    'type' => ucwords($card->card->brand),
+                    'last_four' => $card->card->last4,
+                ]);
+            }
+
+            foreach ($user->bankAccounts() as $bankAccount) {
+                array_push($payment_sources, [
+                    'id' => $bankAccount->id,
+                    'type' => "Bank Account",
+                    'last_four' => $bankAccount->last4,
+                ]);
             }
         }
 
@@ -96,7 +109,7 @@ class UserController extends Controller
     }
 
 
-        /**
+    /**
      * View all user Donations
      *
      * @param  \Illuminate\Http\Request  $request
@@ -105,6 +118,10 @@ class UserController extends Controller
      */
     public function donations(Request $request, User $user)
     {
+        $current_user = auth()->user();
+        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $user->id != $current_user->id) {
+            response("Not Authorized", 401);
+        }
         return response(['donations' => ReponseResource::collection($user->donations()), 'message' => 'Retrieved successfully'], 200);
     }
 

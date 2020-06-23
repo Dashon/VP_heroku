@@ -4,8 +4,65 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "491e3b5012c653bf3baab27541065725",
+    "content-hash": "1e03dec5004c894ae34cf58db0d849c1",
     "packages": [
+        {
+            "name": "alexvargash/laravel-stripe-plaid",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/alexvargash/laravel-stripe-plaid.git",
+                "reference": "af17b418463d9a34feb63d1f63d1b3d645f3b125"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/alexvargash/laravel-stripe-plaid/zipball/af17b418463d9a34feb63d1f63d1b3d645f3b125",
+                "reference": "af17b418463d9a34feb63d1f63d1b3d645f3b125",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^3.8",
+                "phpunit/phpunit": "^7.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "AlexVargash\\LaravelStripePlaid\\StripePlaidServiceProvider"
+                    ],
+                    "aliases": {
+                        "StripePlaid": "AlexVargash\\LaravelStripePlaid\\Facades\\StripePlaid"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "AlexVargash\\LaravelStripePlaid\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alex Vargas",
+                    "email": "alexvargas.dev@gmail.com"
+                }
+            ],
+            "description": "Simple package for creating a Stripe Bank Account Token from a Plaid token.",
+            "keywords": [
+                "Laravel Stripe",
+                "laravel",
+                "plaid",
+                "stripe",
+                "stripe plaid"
+            ],
+            "time": "2019-05-20T15:18:54+00:00"
+        },
         {
             "name": "asm89/stack-cors",
             "version": "1.3.0",
