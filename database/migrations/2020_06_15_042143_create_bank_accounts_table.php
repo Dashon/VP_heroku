@@ -20,8 +20,10 @@ class CreateBankAccountsTable extends Migration
             $table->string('plaid_id');
             $table->string('plaid_secrete');
             $table->string('stripe_token');
-            $table->string('routing_number');
-            $table->string('account_number');
+            $table->unsignedInteger('routing_number');
+            $table->unsignedInteger('account_number');
+
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
@@ -32,6 +34,9 @@ class CreateBankAccountsTable extends Migration
      */
     public function down()
     {
+        Schema::table('bank_accounts', function (Blueprint $table) {
+            $table->dropForeign('user_id');
+        });
         Schema::dropIfExists('bank_accounts');
     }
 }

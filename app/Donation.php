@@ -9,7 +9,7 @@ use App\User;
 class Donation extends Model
 {
     protected $fillable = [
-        'user_id', 'description', 'amount', 'start_date', 'type', 'stripe_token', 'status'
+        'user_id', 'description', 'amount', 'start_date', 'type', 'stripe_token', 'status', 'round_up_balance','last_round_up_charge_date'
     ];
 
     public function transactions()

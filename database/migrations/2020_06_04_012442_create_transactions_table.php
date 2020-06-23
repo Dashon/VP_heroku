@@ -17,7 +17,8 @@ class CreateTransactionsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('donation_id');
             $table->string('stripe_tx');
-            $table->string('plaid_tx');
+            $table->unsignedInteger('amount');
+            $table->date('transaction_date');
             $table->timestamps();
 
             $table->foreign('donation_id')->references('id')->on('donations');

@@ -17,13 +17,14 @@ class CreateDonationsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('description');
-            $table->string('amount');
+            $table->unsignedInteger('amount');
             $table->enum('status', array('active','paused','inactive'))->default(('active'));
             $table->enum('type', array('round_up', 'once', 'monthly'));
             $table->date('start_date');
             $table->string('stripe_token');
             $table->timestamps();
-
+            $table->unsignedInteger('round_up_balance');
+            $table->date('last_round_up_charge_date');
             $table->foreign('user_id')->references('id')->on('users');
         });
     }
