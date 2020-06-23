@@ -68,13 +68,22 @@ class DonationController extends Controller
         if ($request->type == 'once') {
             // $current_user->charge($request->amount * 100, ['source' => $request->stripe_token,
             // 'customer'=>$current_user->stripe_id, ]);
-            $stripe->charges->create([
-                'amount' => 2000,
-                'currency' => 'usd',
-                'object'=>'card',
-                'source' => $request->stripe_token,
-                'description' => 'My First Test Charge (created for API docs)',
-              ]);
+
+              try {
+                $stripe->paymentIntents->create([
+                  'amount' => $request->amount * 100,
+                  'currency' => 'usd',
+                  'customer' => $current_user->stripe_id,
+                  'payment_method' => $request->stripe_token,
+                  'off_session' => true,
+                  'confirm' => true,
+                ]);
+              } catch (\Stripe\Exception\CardException $e) {
+                // Error code will be authentication_required if authentication is needed
+                echo 'Error code is:' . $e->getError()->code;
+                $payment_intent_id = $e->getError()->payment_intent->id;
+                $payment_intent = $stripe->paymentIntents->retrieve($payment_intent_id);
+              }
 
         } else if ($request->type == 'monthly') {
 

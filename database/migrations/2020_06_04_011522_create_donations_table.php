@@ -23,8 +23,8 @@ class CreateDonationsTable extends Migration
             $table->date('start_date');
             $table->string('stripe_token');
             $table->timestamps();
-            $table->unsignedInteger('round_up_balance');
-            $table->date('last_round_up_charge_date');
+            $table->unsignedInteger('round_up_balance')->nullable();
+            $table->date('last_round_up_charge_date')->nullable();
             $table->foreign('user_id')->references('id')->on('users');
         });
     }
