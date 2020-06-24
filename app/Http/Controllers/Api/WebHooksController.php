@@ -43,10 +43,8 @@ class WebHooksController extends Controller
         //     return response([ 'error' => $e->getMessage() ],403);
         //   }
 
-        print_r($request);
-
-        $type = $event['type'];
-        $object = $event['data']['object'];
+        $type = $event->type;
+        $object = $event->data->object;
 
         if ($type == 'payment_intent.succeeded') {
         //  $logger->info('🔔 A SetupIntent has successfully set up a PaymentMethod for future use.');
