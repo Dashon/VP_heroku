@@ -18,14 +18,14 @@ class DonationController extends Controller
      */
     /**
      * @OA\Get(
-     *     path="/donations",
+     *     path="/donation",
      *     @OA\Response(response="200", description="Display a listing of donations.")
      * )
      */
     public function index()
     {
         $current_user = auth()->user();
-        if ($current_user->type === 'donator') {
+        if ($current_user->type == 'donator') {
             response("Not Authorized", 401);
         }
 
