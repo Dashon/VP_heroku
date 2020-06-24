@@ -64,6 +64,8 @@ class DonationController extends Controller
 
         $billing_cycle_anchor = \Carbon\Carbon::createFromDate($request->start_date);
         $donation = new Donation($data);
+        $current_user->donations()->save($donation);
+
         $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
 
         if ($request->type == 'once') {
@@ -80,21 +82,19 @@ class DonationController extends Controller
                     'confirm' => true,
                     'metadata' => ['donation_id' => $donation->id]
                 ]);
-                new Transaction([
-                    'donation_id' => $donation->id,
+                $transaction = new Transaction([
                     'transaction_type' => 'CHARGE',
                     'status' => 'pending',
                     'stripe_payment_intent' => $payment_intent->id,
-                    'transaction_date' => $todayDate,
+                    'transaction_date' =>  \Carbon\Carbon::createFromDate($todayDate),
                     'amount' => $request->amount * 100,
                 ]);
+                $donation->transactions()->save($transaction);
+
             } catch (\Stripe\Exception\CardException $e) {
                 // Error code will be authentication_required if authentication is needed
                 return response(['error' => $e->getError()->code, 'Validation Error'], 400);
-            } catch (\Throwable $th) {
-                return response(['error' => $th, 'Validation Error'], 400);
-        //throw $th;
-    }
+            }
         } else if ($request->type == 'monthly') {
 
             $cent_ammount = round($request->amount / 100) * 100;
@@ -124,10 +124,6 @@ class DonationController extends Controller
                 'metadata' => ['donation_id' => $donation->id]
             ]);
         }
-
-
-        $current_user->donations()->save($donation);
-
         return response(['donation' => new ReponseResource($donation), 'message' => 'Created successfully'], 200);
     }
 
