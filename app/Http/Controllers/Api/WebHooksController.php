@@ -55,7 +55,7 @@ class WebHooksController extends Controller
         if ($type == 'payment_intent.succeeded') {
             //  $logger->info('🔔 A SetupIntent has successfully set up a PaymentMethod for future use.');
             if ($object->metadata->donation_id) {
-                $donation = Donation::where('id', $event->metadata->donation_id)->get();
+                $donation = Donation::where('id', $object->metadata->donation_id)->get();
                 if ($donation->status == 'payment_failed') {
                     $donation->status = "active";
                     $donation->save();
@@ -79,6 +79,7 @@ class WebHooksController extends Controller
         if ($type == 'payment_intent.payment_failed') {
             if ($object->metadata->donation_id) {
                 $donation = Donation::where('id', $object->metadata->donation_id)->get();
+                dd($donation);
                 if ($donation->status == 'active') {
                     $donation->status = "payment_failed";
                     $donation->save();
@@ -88,6 +89,7 @@ class WebHooksController extends Controller
                 $transaction->status = $object->status;
                 $transaction->save();
                 return response(['result' => "updated Transaction"], 200);
+
             }
         }
 
