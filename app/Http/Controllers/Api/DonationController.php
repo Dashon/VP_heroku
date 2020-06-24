@@ -91,7 +91,10 @@ class DonationController extends Controller
             } catch (\Stripe\Exception\CardException $e) {
                 // Error code will be authentication_required if authentication is needed
                 return response(['error' => $e->getError()->code, 'Validation Error'], 400);
-            }
+            } catch (\Throwable $th) {
+                return response(['error' => $th, 'Validation Error'], 400);
+        //throw $th;
+    }
         } else if ($request->type == 'monthly') {
 
             $cent_ammount = round($request->amount / 100) * 100;
