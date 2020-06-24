@@ -56,7 +56,6 @@ class WebHooksController extends Controller
             //  $logger->info('🔔 A SetupIntent has successfully set up a PaymentMethod for future use.');
             if ($object->metadata->donation_id) {
                 $donation = Donation::findOrFail($object->metadata->donation_id);
-                dd($donation);
                 if ($donation->status == 'payment_failed') {
                     $donation->status = "active";
                     $donation->save();
