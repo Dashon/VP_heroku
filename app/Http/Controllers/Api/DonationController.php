@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Donation;
+use App\Transaction;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReponseResource;
 use Illuminate\Http\Request;
@@ -57,7 +58,7 @@ class DonationController extends Controller
 
 
         if ($validator->fails()) {
-            return response(['error' => $validator->errors(), 'Validation Error']);
+            return response(['error' => $validator->errors(), 'Validation Error'], 400);
         }
 
 
@@ -69,22 +70,28 @@ class DonationController extends Controller
             // $current_user->charge($request->amount * 100, ['source' => $request->stripe_token,
             // 'customer'=>$current_user->stripe_id, ]);
 
-              try {
-                $stripe->paymentIntents->create([
-                  'amount' => $request->amount * 100,
-                  'currency' => 'usd',
-                  'customer' => $current_user->stripe_id,
-                  'payment_method' => $request->stripe_token,
-                  'off_session' => true,
-                  'confirm' => true,
+            try {
+                $payment_intent =  $stripe->paymentIntents->create([
+                    'amount' => $request->amount * 100,
+                    'currency' => 'usd',
+                    'customer' => $current_user->stripe_id,
+                    'payment_method' => $request->stripe_token,
+                    'off_session' => true,
+                    'confirm' => true,
+                    'metadata' => ['donation_id' => $donation->id]
                 ]);
-              } catch (\Stripe\Exception\CardException $e) {
+                new Transaction([
+                    'donation_id' => $donation->id,
+                    'transaction_type' => 'CHARGE',
+                    'status' => 'pending',
+                    'stripe_payment_intent' => $payment_intent->id,
+                    'transaction_date' => $todayDate,
+                    'amount' => $request->amount * 100,
+                ]);
+            } catch (\Stripe\Exception\CardException $e) {
                 // Error code will be authentication_required if authentication is needed
-                echo 'Error code is:' . $e->getError()->code;
-                $payment_intent_id = $e->getError()->payment_intent->id;
-                $payment_intent = $stripe->paymentIntents->retrieve($payment_intent_id);
-              }
-
+                return response(['error' => $e->getError()->code, 'Validation Error'], 400);
+            }
         } else if ($request->type == 'monthly') {
 
             $cent_ammount = round($request->amount / 100) * 100;
@@ -105,13 +112,14 @@ class DonationController extends Controller
             $stripe->subscriptions->create([
                 'customer' => $current_user->stripe_id,
                 'items' => [
-                  ['price' => $price->id],
+                    ['price' => $price->id],
                 ],
-                'default_source'=>$request->stripe_token,
+                'default_source' => $request->stripe_token,
                 'billing_cycle_anchor' => $billing_cycle_anchor->timestamp,
                 'cancel_at_period_end' => false,
                 'prorate' => false,
-              ]);
+                'metadata' => ['donation_id' => $donation->id]
+            ]);
         }
 
 

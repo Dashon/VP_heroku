@@ -25,3 +25,5 @@ Route::apiResource('/user', 'Api\UserController')->middleware('auth:api');
 Route::apiResource('/donation', 'Api\DonationController')->middleware('auth:api');
 
 Route::get('/user/{user}/paymentSources', 'Api\UserController@paymentSources')->middleware('auth:api');
+Route::post('/user/create-setup-intent', 'Api\UserController@createSetupIntent')->middleware('auth:api');
+Route::post('/stripe-web-hook','Api/WebHooksController@stripeWebHook');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\User;
@@ -15,7 +15,7 @@ class AuthController extends Controller
             'phone' => 'phone:AUTO,US',
             'email' => 'email|required|unique:users',
             'password' => 'required|confirmed',
-            'is_beneficiary'=>'bool'
+            'is_beneficiary' => 'bool'
         ]);
 
         $validatedData['password'] = bcrypt($request->password);
@@ -24,8 +24,7 @@ class AuthController extends Controller
 
         $stripeCustomer = $user->createOrGetStripeCustomer();
 
-        return response([ 'user' => $user, 'access_token' => $accessToken, 'message' => 'Register s
-        uccessfully'], 200);
+        return response(['user' => $user, 'access_token' => $accessToken, 'message' => 'Register successfully'], 200);
     }
 
     public function login(Request $request)
@@ -36,12 +35,11 @@ class AuthController extends Controller
         ]);
 
         if (!auth()->attempt($loginData)) {
-            return response(['message' => 'Invalid Credentials']);
+            return response(['message' => 'Invalid Credentials'], 401);
         }
 
         $accessToken = auth()->user()->createToken('authToken')->accessToken;
 
         return response(['user' => auth()->user(), 'access_token' => $accessToken, 'message' => 'Login successfully'], 200);
-
     }
 }

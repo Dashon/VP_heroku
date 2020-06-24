@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\User;
 use App\Http\Controllers\Controller;
@@ -145,5 +145,18 @@ class UserController extends Controller
         $this->save();
 
         return response(['message' => 'DeActivated']);
+    }
+
+
+    public function createSetupIntent () {
+        $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+        // The PaymentMethod will be stored to this Customer for later use.
+        $current_user = auth()->user();
+
+        $setup_intent = $stripe->paymentIntents->create([
+          'customer' => $current_user->stripe_id
+        ]);
+        // Send Setup Intent details to client
+        return response(['client_secret' => new ReponseResource($setup_intent->client_secret), 'message' => 'Retrieved successfully'], 200);
     }
 }

@@ -22,6 +22,7 @@ class CreateBankAccountTransactionsTable extends Migration
             $table->unsignedInteger('amount');
             $table->unsignedInteger('round_up_amount');
             $table->date('transaction_date');
+
             $table->foreign('bank_account_id')->references('id')->on('bank_accounts');
         });
     }
