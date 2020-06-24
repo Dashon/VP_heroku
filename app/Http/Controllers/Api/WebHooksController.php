@@ -28,24 +28,20 @@ class WebHooksController extends Controller
 
     {
         Stripe::setApiKey(getenv('STRIPE_SECRET'));
-        $endpoint_secret = config('STRIPE_WEBHOOK_SECRET');
-        $request = @file_get_contents('php://input');
-        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        dd($endpoint_secret);
-
-        $event = null;
-        if ($endpoint_secret) {
+        $event = $request;
+        // Parse the message body (and check the signature if possible)
+        $webhookSecret = env('STRIPE_WEBHOOK_SECRET');
+        if ($webhookSecret) {
           try {
-            $event = \Stripe\Webhook::constructEvent(
+              $event = \Stripe\Webhook::constructEvent(
                 $request,
-                $sig_header,
-                $endpoint_secret
+                $request->header('stripe-signature'),
+                $webhookSecret
             );
           } catch (\Exception $e) {
             return response([ 'error' => $e->getMessage() ],403);
           }
         } else {
-
           $event = $request;
         }
         $type = $event['type'];
