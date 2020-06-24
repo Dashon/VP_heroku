@@ -28,7 +28,7 @@ class WebHooksController extends Controller
 
     {
         Stripe::setApiKey(getenv('STRIPE_SECRET'));
-        $event = $request->getParsedBody();
+        $event = $request;
         // Parse the message body (and check the signature if possible)
         $webhookSecret = getenv('STRIPE_WEBHOOK_SECRET');
         if ($webhookSecret) {
@@ -42,7 +42,7 @@ class WebHooksController extends Controller
             return response([ 'error' => $e->getMessage() ],403);
           }
         } else {
-          $event = $request->getParsedBody();
+          $event = $request;
         }
         $type = $event['type'];
         $object = $event['data']['object'];
