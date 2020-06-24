@@ -27,11 +27,10 @@ class WebHooksController extends Controller
     public function stripeWebHook(Request $request)
 
     {
-        Stripe::setApiKey(getenv('STRIPE_SECRET'));
-        $endpoint_secret = config('STRIPE_WEBHOOK_SECRET');
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+        $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
         $request = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        dd($endpoint_secret);
 
         $event = null;
         if ($endpoint_secret) {
