@@ -61,7 +61,7 @@ class WebHooksController extends Controller
                     $donation->save();
                 }
 
-                $transaction = Transaction::where('stripe_payment_intent', $object->id)->get();
+                $transaction = Transaction::where('stripe_payment_intent', $object->id)->firstOrFail();
                 $transaction->status = $object->status;
                 $transaction->save();
 
@@ -78,13 +78,13 @@ class WebHooksController extends Controller
 
         if ($type == 'payment_intent.payment_failed') {
             if ($object->metadata->donation_id) {
-                $donation = Donation::where('id', $object->metadata->donation_id)->get();
+                $donation = Donation::findOrFail('id', $object->metadata->donation_id);
                 if ($donation->status == 'active') {
                     $donation->status = "payment_failed";
                     $donation->save();
                 }
 
-                $transaction = Transaction::where('stripe_payment_intent', $object->id)->get();
+                $transaction = Transaction::where('stripe_payment_intent', $object->id)->firstOrFail();
                 $transaction->status = $object->status;
                 $transaction->save();
                 return response(['result' => "updated Transaction"], 200);
