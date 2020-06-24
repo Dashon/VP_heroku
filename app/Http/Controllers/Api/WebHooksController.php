@@ -43,10 +43,9 @@ class WebHooksController extends Controller
           } catch (\Exception $e) {
             return response([ 'error' => $e->getMessage() ],403);
           }
-        } else {
-          $event = $request;
         }
-        dd($event->id);
+
+        print_r($event);
         $type = $event['type'];
         $object = $event['data']['object'];
 
