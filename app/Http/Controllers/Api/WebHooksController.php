@@ -33,15 +33,15 @@ class WebHooksController extends Controller
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
 
         $event = $request;
-          try {
-            $event = \Stripe\Webhook::constructEvent(
-                $request,
-                $sig_header,
-                $endpoint_secret
-            );
-          } catch (\Exception $e) {
-            return response([ 'error' => $e->getMessage() ],403);
-          }
+        //   try {
+        //     $event = \Stripe\Webhook::constructEvent(
+        //         $request,
+        //         $sig_header,
+        //         $endpoint_secret
+        //     );
+        //   } catch (\Exception $e) {
+        //     return response([ 'error' => $e->getMessage() ],403);
+        //   }
 
         print_r($request);
 
