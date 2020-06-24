@@ -34,8 +34,8 @@ class WebHooksController extends Controller
         if ($webhookSecret) {
           try {
               $event = \Stripe\Webhook::constructEvent(
-                $request->getBody(),
-                $request->getHeaderLine('stripe-signature'),
+                $request,
+                $request->header('stripe-signature'),
                 $webhookSecret
             );
           } catch (\Exception $e) {
