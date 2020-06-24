@@ -17,7 +17,7 @@ class CreateBankAccountTransactionsTable extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedBigInteger('bank_account_id');
-            $table->string('stripe_tx');
+            $table->string('stripe_payment_intent');
             $table->string('merchant');
             $table->unsignedInteger('amount');
             $table->unsignedInteger('round_up_amount');

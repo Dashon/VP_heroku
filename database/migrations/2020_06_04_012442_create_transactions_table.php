@@ -16,7 +16,7 @@ class CreateTransactionsTable extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('donation_id');
-            $table->string('stripe_tx');
+            $table->string('stripe_payment_intent');
             $table->unsignedInteger('amount');
             $table->date('transaction_date');
             $table->timestamps();

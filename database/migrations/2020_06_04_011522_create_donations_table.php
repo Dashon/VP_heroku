@@ -18,7 +18,7 @@ class CreateDonationsTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('description');
             $table->unsignedInteger('amount');
-            $table->enum('status', array('active','paused','inactive'))->default(('active'));
+            $table->enum('status', array('active','paused','inactive','payment_failed'))->default(('active'));
             $table->enum('type', array('round_up', 'once', 'monthly'));
             $table->date('start_date');
             $table->string('stripe_token');
