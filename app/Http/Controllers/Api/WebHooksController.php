@@ -46,7 +46,6 @@ class WebHooksController extends Controller
         } else {
           $event = $request;
         }
-        $event = $event->;
         dd($event->id);
         $type = $event['type'];
         $object = $event['data']['object'];
