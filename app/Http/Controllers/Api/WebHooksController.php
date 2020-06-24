@@ -32,7 +32,7 @@ class WebHooksController extends Controller
         $request = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
 
-        $event = null;
+        $event = $request;
           try {
             $event = \Stripe\Webhook::constructEvent(
                 $request,
@@ -43,7 +43,7 @@ class WebHooksController extends Controller
             return response([ 'error' => $e->getMessage() ],403);
           }
 
-        print_r($event);
+        print_r($request);
 
         $type = $event['type'];
         $object = $event['data']['object'];
