@@ -33,7 +33,6 @@ class WebHooksController extends Controller
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
 
         $event = null;
-        if ($endpoint_secret) {
           try {
             $event = \Stripe\Webhook::constructEvent(
                 $request,
@@ -43,9 +42,9 @@ class WebHooksController extends Controller
           } catch (\Exception $e) {
             return response([ 'error' => $e->getMessage() ],403);
           }
-        }
 
         print_r($event);
+
         $type = $event['type'];
         $object = $event['data']['object'];
 
