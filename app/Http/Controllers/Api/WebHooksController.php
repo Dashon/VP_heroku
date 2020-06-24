@@ -31,20 +31,25 @@ class WebHooksController extends Controller
         $endpoint_secret = config('STRIPE_WEBHOOK_SECRET');
         $request = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        dd($endpoint_secret);
 
-        $event = $request;
-        //   try {
-        //     $event = \Stripe\Webhook::constructEvent(
-        //         $request,
-        //         $sig_header,
-        //         $endpoint_secret
-        //     );
-        //   } catch (\Exception $e) {
-        //     return response([ 'error' => $e->getMessage() ],403);
-        //   }
+        $event = null;
+        if ($endpoint_secret) {
+          try {
+            $event = \Stripe\Webhook::constructEvent(
+                $request,
+                $sig_header,
+                $endpoint_secret
+            );
+          } catch (\Exception $e) {
+            return response([ 'error' => $e->getMessage() ],403);
+          }
+        } else {
 
-        $type = $event->type;
-        $object = $event->data->object;
+          $event = $request;
+        }
+        $type = $event['type'];
+        $object = $event['data']['object'];
 
         if ($type == 'payment_intent.succeeded') {
         //  $logger->info('🔔 A SetupIntent has successfully set up a PaymentMethod for future use.');
