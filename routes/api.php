@@ -29,5 +29,5 @@ Route::post('/register', 'Api\Auth\AuthController@register');
 Route::post('/login', 'Api\Auth\AuthController@login');
 
 Route::post('/forgot_password', 'Api\Auth\PasswordResetController@create');
-Route::get('/forgot_password/{token}', 'Api\Auth\PasswordResetController@find');
+Route::get('/forgot_password/find/{token}', 'Api\Auth\PasswordResetController@find');
 Route::post('/forgot_password/reset', 'Api\Auth\PasswordResetController@reset');
