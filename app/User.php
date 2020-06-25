@@ -5,14 +5,13 @@ namespace App;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\CanResetPassword;
 use Laravel\Passport\HasApiTokens;
 use Laravel\Cashier\Billable;
 use App\BankAccount;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasApiTokens, Billable,CanResetPassword;
+    use Notifiable, HasApiTokens, Billable;
 
     /**
      * The attributes that are mass assignable.
