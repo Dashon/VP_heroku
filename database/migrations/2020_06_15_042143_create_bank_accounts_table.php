@@ -18,8 +18,7 @@ class CreateBankAccountsTable extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('user_id');
             $table->string('plaid_id');
-            $table->string('plaid_secrete');
-            $table->string('stripe_token');
+            $table->string('stripe_id');
             $table->unsignedInteger('routing_number');
             $table->unsignedInteger('account_number');
 

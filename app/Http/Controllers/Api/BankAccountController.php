@@ -46,19 +46,19 @@ class BankAccountController extends Controller
             'routing_number' => 'required|max:255',
             'account_number' => 'required|max:255',
             'plaid_id' => 'required|max:255',
-            'plaid_secrete' => 'required|max:255'
+            'plaid_public_token' => 'required|max:255'
         ]);
 
         if ($validator->fails()) {
             return response(['error' => $validator->errors(), 'Validation Error']);
         }
-        if($current_user->bankAccounts()->where('account_number', $request->account_number)->where('routing_number', $request->routing_number)){
+        if($current_user->bankAccounts()->where('account_number', $request->account_number)->where('routing_number', $request->routing_number)->count()){
             return response("Account Already Exist",409);
         }
 
 
         $accountId = $request->plaid_id;
-        $publicToken = $request->plaid_secrete;
+        $publicToken = $request->plaid_public_token;
 
         $stripePlaid = new StripePlaid();
         $stripeToken = $stripePlaid->getStripeToken($publicToken, $accountId);

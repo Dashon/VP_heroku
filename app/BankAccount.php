@@ -15,4 +15,11 @@ class BankAccount extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function bankAccountTransactions()
+    {
+        return $this->hasMany(BankAccountTransaction::class);
+    }
+
+
 }

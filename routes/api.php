@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::apiResource('/user', 'Api\UserController');
+    Route::get('/user/{user}/paymentSources', 'Api\UserController@paymentSources');
+    Route::post('/user/create-setup-intent', 'Api\UserController@createSetupIntent');
+    Route::post('change_password', 'Api\AuthController@change_password');
+    Route::apiResource('/donation', 'Api\DonationController');
+});
 Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');
-
-Route::apiResource('/user', 'Api\UserController')->middleware('auth:api');
-Route::apiResource('/donation', 'Api\DonationController')->middleware('auth:api');
-
-Route::get('/user/{user}/paymentSources', 'Api\UserController@paymentSources')->middleware('auth:api');
-Route::post('/user/create-setup-intent', 'Api\UserController@createSetupIntent')->middleware('auth:api');
-Route::post('/stripe-web-hook','Api\WebHooksController@stripeWebHook');
+Route::post('/forgot_password', 'Api\AuthController@forgot_password');
+Route::post('/stripe-web-hook', 'Api\WebHooksController@stripeWebHook');

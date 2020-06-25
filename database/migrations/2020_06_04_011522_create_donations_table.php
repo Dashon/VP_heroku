@@ -21,7 +21,8 @@ class CreateDonationsTable extends Migration
             $table->enum('status', array('active','paused','inactive','payment_failed'))->default(('active'));
             $table->enum('type', array('round_up', 'once', 'monthly'));
             $table->date('start_date');
-            $table->string('stripe_token');
+            $table->string('stripe_payment_token');
+            $table->string('stripe_subscription_id');
             $table->timestamps();
             $table->unsignedInteger('round_up_balance')->nullable();
             $table->date('last_round_up_charge_date')->nullable();
