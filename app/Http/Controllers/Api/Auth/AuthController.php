@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\User;
@@ -45,27 +45,6 @@ class AuthController extends Controller
         return response(['user' => auth()->user(), 'access_token' => $accessToken, 'message' => 'Login successfully'], 200);
     }
 
-    public function forgot_password(Request $request)
-    {
-        $validatedData = $request->validate([
-            'email' => "required|email"
-        ]);
-
-        try {
-            $response = Password::sendResetLink($request->only('email'), function (Message $message) {
-                $message->subject($this->getEmailSubject());
-            });
-            switch ($response) {
-                case Password::RESET_LINK_SENT:
-                    return response(['message' => trans($response)], 200);
-
-                case Password::INVALID_USER:
-                    return response(['message' => trans($response)], 400);
-            }
-        } catch (\Throwable $ex) {
-            return response(['message' => $ex->getMessage()], 400);
-        }
-    }
 
     public function change_password(Request $request)
     {
@@ -95,5 +74,26 @@ class AuthController extends Controller
             }
             return response(['message' => $msg], 400);
         }
+    }
+
+     /**
+     * Logout user (Revoke the token)
+     *
+     * @return [string] message
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->token()->revoke();
+        return response(['message' => 'logout_success'], 200);
+    }
+
+    /**
+     * Get the authenticated User
+     *
+     * @return [json] user object
+     */
+    public function user(Request $request)
+    {
+        return response(['user' => $request->user()], 200);
     }
 }
