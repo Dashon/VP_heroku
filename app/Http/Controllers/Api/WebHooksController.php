@@ -24,12 +24,6 @@ class WebHooksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    /**
-     * @OA\Get(
-     *     path="/bbankAccount",
-     *     @OA\Response(response="200", description="Display a listing of BBank Accounts.")
-     * )
-     */
     public function stripeWebHook(Request $request)
 
     {

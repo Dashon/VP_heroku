@@ -17,8 +17,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
-        return response(['users' => ReponseResource::collection($users), 'message' => 'Retrieved successfully'], 200);
+        $paginated = User::paginate();
+        $paginated->getCollection()->each->withContributionData();
+        return response($paginated, 200);
     }
 
     /**
@@ -29,9 +30,17 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $user->withContributionData();
         return response(['user' => new ReponseResource($user), 'message' => 'Retrieved successfully'], 200);
     }
 
+    public function userDonations(User $user)
+    {
+        $paginated = $user->donations()->with('transactions')->paginate();
+        $paginated->getCollection()->each->withSummary();
+
+        return response($paginated, 200);
+    }
     /**
      * Update the specified resource in storage.
      *
@@ -60,6 +69,7 @@ class UserController extends Controller
             'email' => $request->email ?? $user->email
         ]);
 
+        $user->withContributionData();
         return response(['user' => new ReponseResource($user), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -100,22 +110,6 @@ class UserController extends Controller
 
 
     /**
-     * View all user Donations
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function donations(Request $request, User $user)
-    {
-        $current_user = auth()->user();
-        if (($current_user->type != 'admin' || $current_user->type != 'moderator') && $user->id != $current_user->id) {
-            response("Not Authorized", 401);
-        }
-        return response(['donations' => ReponseResource::collection($user->donations()), 'message' => 'Retrieved successfully'], 200);
-    }
-
-    /**
      * Remove the specified resource from storage.
      *
      * @param \App\User $user
@@ -138,15 +132,21 @@ class UserController extends Controller
     }
 
 
-    public function createSetupIntent () {
+    public function createSetupIntent()
+    {
         $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
         // The PaymentMethod will be stored to this Customer for later use.
         $current_user = auth()->user();
 
         $setup_intent = $stripe->paymentIntents->create([
-          'customer' => $current_user->stripe_id
+            'customer' => $current_user->stripe_id
         ]);
         // Send Setup Intent details to client
         return response(['client_secret' => new ReponseResource($setup_intent->client_secret), 'message' => 'Retrieved successfully'], 200);
+    }
+
+    public function store(User $user)
+    {
+        return response(['message' => 'Not Implemented'], 501);
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Laravel\Cashier\Billable;
 use App\BankAccount;
+use App\Transaction;
 
 class User extends Authenticatable
 {
@@ -19,7 +20,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'phone', 'terms', 'privacy', 'policy', 'type', 'active', 'plaid_id', 'stripe_id', 'is_beneficiary'
+        'name', 'email', 'password', 'address_1','address_2','city','state','zip','phone', 'terms', 'privacy', 'policy', 'type', 'active', 'plaid_id', 'stripe_id', 'is_beneficiary'
     ];
 
     /**
@@ -91,5 +92,18 @@ class User extends Authenticatable
     public function bankAccounts()
     {
         return $this->hasMany(BankAccount::class);
+    }
+    public function donationTransactions()
+    {
+        return $this->hasManyThrough(
+            'App\Transaction',
+            'App\Donation',
+        );
+    }
+    public function withContributionData()
+    {
+        $this->total_contribution_amount = $this->donationTransactions()->sum('transactions.amount');
+        $this->total_contributions = $this->donationTransactions()->count();
+        return $this;
     }
 }

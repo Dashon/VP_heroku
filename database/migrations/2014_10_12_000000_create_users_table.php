@@ -21,6 +21,11 @@ class CreateUsersTable extends Migration
             $table->timestamp('terms')->nullable();
             $table->timestamp('policy')->nullable();
             $table->timestamp('privacy')->nullable();
+            $table->string('address_1');
+            $table->string('address_2');
+            $table->string('city');
+            $table->string('state');
+            $table->string('zip');
             $table->string('plaid_id')->nullable();
             $table->enum('type', array('admin', 'moderator', 'donator'))->default('donator');
             $table->string('password');

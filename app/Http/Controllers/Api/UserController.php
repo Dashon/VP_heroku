@@ -18,6 +18,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
+        $users->each->withContributionData();
         return response(['users' => ReponseResource::collection($users), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -33,6 +34,8 @@ class UserController extends Controller
         if ($user->id != $current_user->id) {
             response("Not Authorized", 401);
         }
+        $user->withContributionData();
+
         return response(['user' => new ReponseResource($user), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -58,8 +61,20 @@ class UserController extends Controller
             'phone' => $request->phone ?? $current_user->phone,
             'email' => $request->email ?? $current_user->email
         ]);
+        $user->withContributionData();
 
         return response(['user' => new ReponseResource($user), 'message' => 'Retrieved successfully'], 200);
     }
 
+
+    public function store(User $user)
+    {
+        return response(['message' => 'Not Implemented'], 501);
+    }
+
+
+    public function destroy(User $user)
+    {
+        return response(['message' => 'Not Implemented'], 501);
+    }
 }

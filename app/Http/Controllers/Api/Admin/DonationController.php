@@ -12,16 +12,14 @@ use Illuminate\Support\Facades\Validator;
 
 class DonationController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/donation",
-     *     @OA\Response(response="200", description="Display a listing of donations.")
-     * )
-     */
+
     public function index(Request $request)
     {
-        $status = $request->status ?? 'succeeded';
-        $donations = Donation::where('status', $status);
+        $donations = Donation::orderBy('start_date', 'DESC');
+
+        if ($request->status) {
+            $donations->where('status', $request->status);
+        }
         if ($request->start_date && $request->end_date) {
             $donations->whereBetween('start_date', [$request->start_date, $request->end_date]);
         }
@@ -41,24 +39,10 @@ class DonationController extends Controller
                     ->orWhere('state', 'like', '%' . $request->keyword . '%');
             }
         });
-        $donations->paginate();
-        $result = $donations->get()
-            ->each(function (Donation $donation) {
-                $user = $donation->user()->firstOrFail();
-                return [
-                    'id' => $donation->id,
-                    'status' => $donation->status,
-                    'date_time' => $donation->start_date,
-                    'last_charge_date' => $donation->last_charge_date,
-                    'amount' => $donation->amount,
-                    'type' => $donation->type,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'city' => $user->city,
-                    'state' => $user->state
-                ];
-            });
-        return response($result, 200);
+
+        $paginated = $donations->with('user')->with('transactions')->paginate();
+        $paginated->getCollection()->each->withSummary();
+        return response($paginated, 200);
     }
 
 
@@ -70,7 +54,7 @@ class DonationController extends Controller
      */
     public function show(Donation $donation)
     {
-        $donation->with(['user']);
+        $donation->load('user')->load('transactions')->withSummary();
         return response(['donation' => new ReponseResource($donation), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -86,7 +70,6 @@ class DonationController extends Controller
         $this->validate($request, [
             'status' => ['string', 'in:', ['canceled', 'paused', 'active']]
         ]);
-
 
         if ($donation->type != 'monthly') {
             return response(['message' => 'donation cannot be modified'], 405);
@@ -117,7 +100,18 @@ class DonationController extends Controller
                 break;
         }
         $donation->update(['status' => $request->status]);
+        $donation->load('user')->load('transactions')->withSummary();
 
         return response(['donation' => new ReponseResource($donation), 'message' => 'Updated successfully'], 200);
+    }
+
+    public function destroy(Donation $donation)
+    {
+        return response(['message' => 'Not Implemented'], 501);
+    }
+
+    public function store(Donation $donation)
+    {
+        return response(['message'=>'Not Implemented'], 501);
     }
 }

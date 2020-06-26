@@ -7,6 +7,7 @@ use App\Transaction;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReponseResource;
 use App\Services\Cashier;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -17,16 +18,11 @@ class TransactionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    /**
-     * @OA\Get(
-     *     path="/transaction",
-     *     @OA\Response(response="200", description="Display a listing of transactions.")
-     * )
-     */
     public function index(Request $request)
     {
-        $status = $request->status ?? 'succeeded';
+        $status = $request->status ?? 'pending';
         $transactions = Transaction::where('status', $status);
+
         if ($request->start_date && $request->end_date) {
             $transactions->whereBetween('transaction_date', [$request->start_date, $request->end_date]);
         }
@@ -48,27 +44,10 @@ class TransactionController extends Controller
                 }
             });
         });
-        $transactions->paginate();
-        $result = $transactions->get()
-            ->each(function (Transaction $transaction) {
-                $donation = $transaction->donation();
-                $user = $donation->user();
-                return [
-                    'id' => $transaction->id,
-                    'status' => $donation->status,
-                    'date_time' => $transaction->transaction_date,
-                    'amount' => $transaction->amount,
-                    'type' => $donation->type,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'stripe_fee' => $transaction->stripe_fee,
-                    'city' => $user->city,
-                    'state' => $user->state
-                ];
-            });
-        return response($result->paginate(), 200);
-    }
 
+        $paginated = $transactions->with('donation.user')->paginate();
+        return response($paginated, 200);
+    }
 
     /**
      * Display the specified resource.
@@ -78,6 +57,19 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction)
     {
+        $transaction->load('donation.user');
         return response(['transaction' => new ReponseResource($transaction), 'message' => 'Retrieved successfully'], 200);
+    }
+    public function store(Transaction $transaction)
+    {
+        return response(['message' => 'Not Implemented'], 501);
+    }
+    public function destroy(Transaction $transaction)
+    {
+        return response(['message' => 'Not Implemented'], 501);
+    }
+    public function update(Transaction $transaction)
+    {
+        return response(['message' => 'Not Implemented'], 501);
     }
 }

@@ -21,4 +21,10 @@ class Donation extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function withSummary()
+    {
+        $this->total_contribution_amount = $this->transactions()->sum('transactions.amount');
+        $this->total_contributions = $this->transactions()->count();
+        return $this;
+    }
 }

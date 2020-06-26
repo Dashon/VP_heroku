@@ -10,5 +10,8 @@ Route::group([
         Route::apiResource('user', 'UserController');
         Route::apiResource('donation', 'DonationController');
         Route::apiResource('transaction', 'TransactionController');
+
+        Route::get('user/{user}/donations', 'UserController@userDonations');
+
     });
 });

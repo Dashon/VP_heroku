@@ -17,16 +17,10 @@ class DonationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    /**
-     * @OA\Get(
-     *     path="/donation",
-     *     @OA\Response(response="200", description="Display a listing of donations.")
-     * )
-     */
     public function index()
     {
         $current_user = auth()->user();
-        $donations = $current_user->donations()->include('user');
+        $donations = $current_user->donations()->with('user');
 
         return response(['donations' => ReponseResource::collection($donations), 'message' => 'Retrieved successfully'], 200);
     }
@@ -134,5 +128,11 @@ class DonationController extends Controller
 
         return response(['donation' => new ReponseResource($donation), 'message' => 'Updated successfully'], 200);
     }
+
+    public function destroy(Donation $donation)
+    {
+        return response(['message'=>'Not Implemented'], 501);
+    }
+
 
 }
