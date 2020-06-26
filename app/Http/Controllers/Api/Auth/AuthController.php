@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Notifications\Auth\Welcome;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -25,6 +26,7 @@ class AuthController extends Controller
         $accessToken = $user->createToken('authToken')->accessToken;
 
         $stripeCustomer = $user->createOrGetStripeCustomer();
+        $user->notify(new Welcome());
 
         return response(['user' => $user, 'access_token' => $accessToken, 'message' => 'Register successfully'], 200);
     }

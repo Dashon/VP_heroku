@@ -1,28 +1,25 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Donation;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class PasswordResetRequest extends Notification implements ShouldQueue
+class NewRecurringDonation extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected $token;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($token)
+    public function __construct()
     {
-        $this->token = $token;
     }
-
     /**
      * Get the notification's delivery channels.
      *
@@ -42,13 +39,10 @@ class PasswordResetRequest extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        $url = url('/api/forgot_password/'.$this->token);
-
         return (new MailMessage)
-                    ->subject(__('passwords.email_password_reset_request_subject'))
-                    ->line(__('passwords.email_password_reset_request_line1'))
-                    ->action(__('passwords.email_password_reset_request_action'), url($url))
-                    ->line(__('passwords.email_password_reset_request_line2'));
+            ->subject(__('donation.email_new_recurring_donation_subject'))
+            ->line(__('donation.email_new_recurring_donation_line1'))
+            ->line(__('donation.email_new_recurring_donation_line2'));
     }
 
     /**

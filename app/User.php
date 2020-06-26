@@ -60,9 +60,29 @@ class User extends Authenticatable
 
     public function paymentSources()
     {
-        return $this->paymentMethods();
+        $payment_sources = array();
+        if ($this->hasPaymentMethod()) {
+            foreach ($this->paymentMethods() as $card) {
+                array_push($payment_sources, [
+                    'id' => $card->id,
+                    'type' => ucwords($card->card->brand),
+                    'last_four' => $card->card->last4,
+                    'stripe_id' => $card->id
+                ]);
+            }
 
+            foreach ($this->bankAccounts() as $bankAccount) {
+                array_push($payment_sources, [
+                    'id' => $bankAccount->id,
+                    'type' => "Bank Account",
+                    'last_four' => $bankAccount->last4,
+                    'stripe_id' => $bankAccount->stripe_id
+                ]);
+            }
+        }
+        return $payment_sources;
     }
+
 
     public function donations()
     {

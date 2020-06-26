@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\PaymentMethod;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class SignupActivated extends Notification implements ShouldQueue
+class NewPaymentMethod extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -41,9 +41,9 @@ class SignupActivated extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->subject(__('auth.email_signup_activated_subject', ['appName' => env('APP_NAME', 'Modulr')]))
-                    ->line(__('auth.email_signup_activated_line1'))
-                    ->line(__('auth.email_signup_activated_line2'));
+            ->subject(__('paymentMethod.email_new_payment_method_subject'))
+            ->line(__('paymentMethod.email_new_payment_method_line1'))
+            ->line(__('paymentMethod.email_new_payment_method_line2'));
     }
 
     /**

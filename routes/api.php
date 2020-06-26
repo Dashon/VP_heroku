@@ -14,20 +14,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => 'auth:api'], function () {
-    Route::apiResource('/user', 'Api\UserController');
-    Route::get('/user/{user}/paymentSources', 'Api\UserController@paymentSources');
-    Route::post('/user/create-setup-intent', 'Api\UserController@createSetupIntent');
-    Route::apiResource('/donation', 'Api\DonationController');
+Route::group([
+    'namespace' => 'Api',
+    'middleware' => 'auth:api'
+], function () {
+    Route::apiResource('user', 'UserController');
+    Route::apiResource('donation', 'DonationController');
 
-    Route::get('/logout', 'Api\Auth\AuthController@logout');
-    Route::get('/user', 'Api\Auth\AuthController@user');
+    Route::get('payment-sources', 'PaymentSourcesController@index');
+    Route::get('payment-sources/{stripe_id}', 'PaymentSourcesController@showPaymentSource');
+    Route::post('payment-sources/create-setup-intent', 'PaymentSourcesController@createSetupIntent');
+    Route::post('payment-sources/add-ank-account', 'PaymentSourcesController@storeBankAccount');
+    Route::delete('payment-sources/{stripe_id}', 'PaymentSourcesController@destroyPaymentSource');
 });
-Route::post('/stripe-web-hook', 'Api\WebHooksController@stripeWebHook');
+Route::post('stripe-web-hook', 'WebHooksController@stripeWebHook');
 
-Route::post('/register', 'Api\Auth\AuthController@register');
-Route::post('/login', 'Api\Auth\AuthController@login');
 
-Route::post('/forgot_password', 'Api\Auth\PasswordResetController@create');
-Route::get('/forgot_password/{token}', 'Api\Auth\PasswordResetController@find');
-Route::post('/forgot_password/reset', 'Api\Auth\PasswordResetController@reset');
+require __DIR__ . '/auth/auth.php';
+require __DIR__ . '/admin/admin.php';

@@ -45,8 +45,8 @@ class RoundUpDonations extends Command
             $bankAccount = BankAccount::where('stripe_token', $donation->stripe_payment_token)->firstOrFail();
 
             $start_date = Carbon::createFromFormat('YYYY-MM-DD',  $donation->start_date);
-            if ($donation->last_round_up_charge_date) {
-                $start_date = Carbon::createFromFormat('YYYY-MM-DD', $donation->last_round_up_charge_date);
+            if ($donation->last_charge_date) {
+                $start_date = Carbon::createFromFormat('YYYY-MM-DD', $donation->last_charge_date);
             }
 
             $last_transaction = BankAccountTransaction::orderBy('transaction_date', 'DESC')->where('bank_account_id', $bankAccount->id)->first();
@@ -88,7 +88,7 @@ class RoundUpDonations extends Command
                         //charge account and break;
                         $cashier = new Cashier();
                         $cashier->checkout($donation);
-                        $donation->update(['round_up_balance' => 0, 'last_round_up_charge_date', $todayDate]);
+                        $donation->update(['round_up_balance' => 0, 'last_charge_date', $todayDate]);
                         break;
                     }
                 }

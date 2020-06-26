@@ -15,6 +15,7 @@ class AddTypeToTransactionsTable extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             $table->string('transaction_type')->nullable();
+            $table->unsignedInteger('stripe_fee')->nullable();
         });
     }
 
@@ -27,6 +28,7 @@ class AddTypeToTransactionsTable extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             $table->dropColumn(['transaction_type']);
+            $table->dropColumn(['stripe_fee']);
         });
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Donation;
 use App\Transaction;
@@ -13,60 +13,54 @@ use Illuminate\Support\Facades\Validator;
 class DonationController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *     path="/donation",
      *     @OA\Response(response="200", description="Display a listing of donations.")
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        $current_user = auth()->user();
-        $donations = $current_user->donations()->include('user');
-
-        return response(['donations' => ReponseResource::collection($donations), 'message' => 'Retrieved successfully'], 200);
+        $status = $request->status ?? 'succeeded';
+        $donations = Donation::where('status', $status);
+        if ($request->start_date && $request->end_date) {
+            $donations->whereBetween('start_date', [$request->start_date, $request->end_date]);
+        }
+        if ($request->keyword) {
+            $donations->where('id', 'like', '%' . $request->keyword . '%');
+        }
+        if ($request->type) {
+            $donations->where('type', $request->type);
+        }
+        $donations->whereHas('user', function ($userQuery) use ($request) {
+            if ($request->only_beneficiary) {
+                $userQuery->where('isBeneficiary', true);
+            }
+            if ($request->keyword) {
+                $userQuery->where('email', 'like', '%' . $request->keyword . '%')
+                    ->orWhere('city', 'like', '%' . $request->keyword . '%')
+                    ->orWhere('state', 'like', '%' . $request->keyword . '%');
+            }
+        });
+        $donations->paginate();
+        $result = $donations->get()
+            ->each(function (Donation $donation) {
+                $user = $donation->user()->firstOrFail();
+                return [
+                    'id' => $donation->id,
+                    'status' => $donation->status,
+                    'date_time' => $donation->start_date,
+                    'last_charge_date' => $donation->last_charge_date,
+                    'amount' => $donation->amount,
+                    'type' => $donation->type,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'city' => $user->city,
+                    'state' => $user->state
+                ];
+            });
+        return response($result, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $current_user = auth()->user();
-        $data = $request->all();
-        $todayDate = date('m/d/Y');
-        if (!$current_user->hasPaymentMethod()) {
-            return response(['message' => 'No payment methods found'], 405);
-        }
-        $data['status'] = "active";
-        $validator = Validator::make($data, [
-            'description' => ['nullable', 'string', 'max:512'],
-            'stripe_payment_token' => 'required|max:255',
-            'amount' => 'required|numeric|min:100',
-            'start_date' => 'required|date|after_or_equal:' . $todayDate,
-            'type' => "required|in:round_up,once,monthly",
-        ]);
-
-        if ($validator->fails()) {
-            return response(['error' => $validator->errors(), 'Validation Error'], 400);
-        }
-        $data['amount'] = round($request->amount / 100) * 100;
-        $donation = new Donation($data);
-        $current_user->donations()->save($donation);
-
-        if ($donation->type != 'round_up') {
-            $cashier = new Cashier();
-            $cashier->checkout($donation);
-        }
-        return response(['donation' => new ReponseResource($donation), 'message' => 'Created successfully'], 200);
-    }
 
     /**
      * Display the specified resource.
@@ -76,11 +70,7 @@ class DonationController extends Controller
      */
     public function show(Donation $donation)
     {
-        $current_user = auth()->user();
-        if ($donation->user()->id != $current_user->id) {
-            response("Not Authorized", 401);
-        }
-
+        $donation->with(['user']);
         return response(['donation' => new ReponseResource($donation), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -97,10 +87,6 @@ class DonationController extends Controller
             'status' => ['string', 'in:', ['canceled', 'paused', 'active']]
         ]);
 
-        $current_user = auth()->user();
-        if ($donation->user()->id != $current_user->id) {
-            response("Not Authorized", 401);
-        }
 
         if ($donation->type != 'monthly') {
             return response(['message' => 'donation cannot be modified'], 405);
@@ -134,5 +120,4 @@ class DonationController extends Controller
 
         return response(['donation' => new ReponseResource($donation), 'message' => 'Updated successfully'], 200);
     }
-
 }
